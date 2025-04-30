@@ -1,0 +1,167 @@
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Bot InteligentnyInaczej</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 550px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+
+        .bot {
+            background-color: #e0e0e0;
+            align-self: flex-start;
+        }
+
+        textarea {
+            resize: none;
+            height: 60px;
+            font-size: 14px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        button {
+            margin-top: 5px;
+            padding: 10px;
+            width: 100%;
+            font-size: 14px;
+            background-color: cadetblue;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: steelblue;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-box" id="chat-box">
+        <div class="message bot">Cześć, jak mogę Ci pomóc?</div>
+    </div>
+    <label for="user-input"></label><textarea id="user-input" placeholder="Napisz wiadomość..."></textarea>
+    <button onclick="sendMessage()">Wyślij</button>
+</div>
+
+<script>
+    const forbiddenWords = ['motyla noga', 'kurka wodna', "brzydkie słowo"];
+
+    const botResponses = [
+        "Czy chcesz wiedzieć co potrafię?",
+        "Czy masz jakieś pytania dotyczące JavaScript?",
+        "Pewnie, co chciałbyś wiedzieć o programowaniu w JS?"
+    ];
+
+    function handleEnter(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('user-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Wulgaryzmy
+        if (containsForbiddenWord(message)) {
+            alert('Ostrzeżenie: użyto wulgaryzmów!');
+            addMessage('Proszę, nie używaj takich słów', 'bot', true);
+            input.value = '';
+            return;
+        }
+
+        addMessage(message, 'user');
+        input.value = '';
+
+        // Komendy
+        if (message.startsWith('/version')) {
+            setTimeout(() => addMessage('Wersja oprogramowania: v1.2.3', 'bot'), 1500);
+            return;
+        }
+
+        if (message.startsWith('/pogoda')) {
+            const city = message.split(' ')[1] || 'nieznane miasto';
+            setTimeout(() => addMessage(`W ${city} jest 22 stopnie`, 'bot'), 1500);
+            return;
+        }
+
+        // Odpowiedź bota
+        setTimeout(() => {
+            const response = getBotResponse(message);
+            addMessage(response, 'bot');
+        }, 1500);
+    }
+
+    function addMessage(text, sender, isError = false) {
+        const chatBox = document.getElementById('chat-box');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        messageDiv.textContent = text;
+        if (isError) messageDiv.style.color = 'red';
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function containsForbiddenWord(message) {
+        return forbiddenWords.some(word => message.toLowerCase().includes(word));
+    }
+
+    function getBotResponse(userInput) {
+        // Deterministyczna odpowiedź
+        const index = Math.abs(hashCode(userInput)) % botResponses.length;
+        return botResponses[index];
+    }
+
+    function hashCode(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return hash;
+    }
+
+    document.getElementById('user-input').addEventListener('keydown', handleEnter);
+</script>
+</body>
+</html>
